@@ -1,13 +1,14 @@
+// components/InkCanvas.js
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 /**
- * Simple ink canvas with:
- * - mouse/pen drawing
- * - undo / clear
- * - export PNG via toDataURL()
+ * InkCanvas
+ * - DPR-aware crisp lines
+ * - subtle grid background
+ * - undo / clear / export
  */
 const InkCanvas = forwardRef(function InkCanvas(
-  { width = 1000, height = 500, penColor = "#111" },
+  { width = 1100, height = 520, penColor = "#F8FAFC" }, // near-white ink
   ref
 ) {
   const canvasRef = useRef(null);
@@ -26,8 +27,6 @@ const InkCanvas = forwardRef(function InkCanvas(
   useEffect(() => {
     const c = canvasRef.current;
     const dpr = window.devicePixelRatio || 1;
-
-    // size the backing canvas by DPR for crisp lines
     c.width = width * dpr;
     c.height = height * dpr;
     c.style.width = width + "px";
@@ -38,12 +37,11 @@ const InkCanvas = forwardRef(function InkCanvas(
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.strokeStyle = penColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.2;
     ctxRef.current = ctx;
 
-    // white background
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, width, height);
+    // background: soft grid on dark
+    drawBackground();
 
     const down = (e) => {
       drawingRef.current = true;
@@ -53,9 +51,9 @@ const InkCanvas = forwardRef(function InkCanvas(
 
     const move = (e) => {
       if (!drawingRef.current) return;
-      const ctx = ctxRef.current;
       const a = lastRef.current;
       const b = { x: e.offsetX, y: e.offsetY };
+      const ctx = ctxRef.current;
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
@@ -83,15 +81,39 @@ const InkCanvas = forwardRef(function InkCanvas(
       c.removeEventListener("pointerup", up);
       c.removeEventListener("pointerleave", up);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height, penColor]);
 
-  function redrawAll(strokesToDraw = strokes) {
+  function drawBackground() {
     const ctx = ctxRef.current;
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "#fff";
+    // dark slate paper
+    ctx.fillStyle = "#0b1020";
     ctx.fillRect(0, 0, width, height);
-    ctx.strokeStyle = penColor;
 
+    // grid
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 1;
+    const step = 28;
+    for (let x = 0; x <= width; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= height; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function redrawAll(strokesToDraw = strokes) {
+    drawBackground();
+    const ctx = ctxRef.current;
+    ctx.strokeStyle = "#F8FAFC";
     for (const stroke of strokesToDraw) {
       for (let i = 1; i < stroke.length; i++) {
         const a = stroke[i - 1];
@@ -117,11 +139,9 @@ const InkCanvas = forwardRef(function InkCanvas(
   }
 
   return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 8, background: "#fafafa", position: "relative" }}>
-      <canvas ref={canvasRef} style={{ cursor: "crosshair" }} />
-      <div style={{ fontSize: 12, color: "#666", marginTop: 8 }}>
-        Draw your answer here (supports mouse or Wacom pen). Undo / Clear below.
-      </div>
+    <div className="canvas-shell">
+      <canvas ref={canvasRef} style={{ cursor: "crosshair", borderRadius: 10, width: "100%" }} />
+      <div className="hint">Draw your answer here (supports mouse or Wacom pen). Undo / Clear below.</div>
     </div>
   );
 });
