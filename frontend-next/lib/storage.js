@@ -1,9 +1,1 @@
-// lib/storage.js
-export const storage = {
-  get(key, fallback = null) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-    catch { return fallback; }
-  },
-  set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){} },
-  remove(key) { try { localStorage.removeItem(key); } catch(e){} }
-};
+export const storage={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}},remove(k){try{localStorage.removeItem(k)}catch{}}}

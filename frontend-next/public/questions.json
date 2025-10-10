@@ -1,118 +1,94 @@
 [
   {
-    "id": "NS-E-1",
-    "unit": "Number System",
+    "id": "M8-RN-E-1",
     "chapter": "Rational Numbers",
     "level": "Easy",
-    "prompt": "Simplify: (3/5) + (2/5).",
-    "answer_type": "numeric_fraction_ok",
-    "expected_fraction": "1",
-    "numeric_expected": 1,
-    "tolerance": 0,
-    "tags": [
-      "rational_numbers",
-      "addition"
-    ]
-  },
-  {
-    "id": "NS-M-1",
-    "unit": "Number System",
-    "chapter": "Powers",
-    "level": "Medium",
-    "prompt": "Evaluate: 2^3 \u00d7 2^2.",
+    "prompt": "Add 3/5 and 4/7.",
     "answer_type": "numeric",
-    "numeric_expected": 32,
-    "tolerance": 0,
-    "tags": [
-      "laws_of_exponents"
-    ]
+    "numeric_expected": 1.1714285714285715,
+    "tolerance": 0.001,
+    "subject": "Mathematics",
+    "standard": 8
   },
   {
-    "id": "NS-H-1",
-    "unit": "Number System",
-    "chapter": "Squares and Square Roots",
-    "level": "Hard",
-    "prompt": "Find the square root of 144.",
-    "answer_type": "numeric",
-    "numeric_expected": 12,
-    "tolerance": 0,
-    "tags": [
-      "square_roots"
-    ]
-  },
-  {
-    "id": "ALG-E-1",
-    "unit": "Algebra",
+    "id": "M8-ALG-M-1",
     "chapter": "Algebraic Expressions",
+    "level": "Medium",
+    "prompt": "Simplify (2x + 3) + (x - 5).",
+    "answer_type": "algebraic",
+    "expected_latex": "3x - 2",
+    "subject": "Mathematics",
+    "standard": 8
+  },
+  {
+    "id": "P8-MOT-E-1",
+    "chapter": "Motion and Time",
     "level": "Easy",
-    "prompt": "Simplify: 3x + 2x.",
-    "answer_type": "algebraic",
-    "expected_latex": "5x",
-    "tags": [
-      "like_terms"
-    ]
+    "prompt": "Define speed and give its SI unit.",
+    "answer_type": "text",
+    "expected": "distance per unit time, m/s",
+    "subject": "Physics",
+    "standard": 8
   },
   {
-    "id": "ALG-M-1",
-    "unit": "Algebra",
-    "chapter": "Algebraic Expressions",
+    "id": "P8-FRC-M-1",
+    "chapter": "Force and Pressure",
     "level": "Medium",
-    "prompt": "Expand: (a + 2)(a + 3).",
-    "answer_type": "algebraic",
-    "expected_latex": "a^2 + 5a + 6",
-    "tags": [
-      "expansion"
-    ]
+    "prompt": "State Newton\u2019s third law of motion.",
+    "answer_type": "text",
+    "expected": "Every action has an equal and opposite reaction.",
+    "subject": "Physics",
+    "standard": 8
   },
   {
-    "id": "ALG-H-1",
-    "unit": "Algebra",
-    "chapter": "Algebraic Expressions",
-    "level": "Hard",
-    "prompt": "Simplify: (x + 3)^2 \u2212 (x \u2212 3)^2.",
-    "answer_type": "algebraic",
-    "expected_latex": "12x",
-    "tags": [
-      "algebraic_identities",
-      "difference_of_squares"
-    ]
-  },
-  {
-    "id": "RP-E-1",
-    "unit": "Ratio and Proportion",
-    "chapter": "Ratio and Proportion",
+    "id": "M12-MAT-E-1",
+    "chapter": "Matrices",
     "level": "Easy",
-    "prompt": "Find the ratio of 2 hours to 30 minutes in simplest form.",
-    "answer_type": "ratio",
-    "expected_ratio": "4:1",
-    "tags": [
-      "unit_conversion",
-      "ratios"
-    ]
+    "prompt": "Compute A + B for A=[[1,2],[3,4]] and B=[[4,3],[2,1]].",
+    "answer_type": "algebraic",
+    "expected_latex": "[[5,5],[5,5]]",
+    "subject": "Mathematics",
+    "standard": 12
   },
   {
-    "id": "RP-M-1",
-    "unit": "Ratio and Proportion",
-    "chapter": "Ratio and Proportion",
-    "level": "Medium",
-    "prompt": "If 3 pens cost \u20b924, find the cost of 7 pens.",
-    "answer_type": "numeric",
-    "numeric_expected": 56,
-    "tolerance": 0,
-    "tags": [
-      "direct_proportion"
-    ]
-  },
-  {
-    "id": "RP-H-1",
-    "unit": "Ratio and Proportion",
-    "chapter": "Playing with Numbers",
+    "id": "M12-DET-H-1",
+    "chapter": "Determinants",
     "level": "Hard",
-    "prompt": "A number is divisible by 9 if the sum of its digits is divisible by 9. Is 5 481 divisible by 9? (Answer 'yes' or 'no')",
-    "answer_type": "categorical",
-    "expected": "yes",
-    "tags": [
-      "divisibility_rules"
-    ]
+    "prompt": "Find the value of |A| if A = [[2,1,3],[1,0,1],[3,1,2]].",
+    "answer_type": "numeric",
+    "numeric_expected": -1,
+    "tolerance": 0,
+    "subject": "Mathematics",
+    "standard": 12
+  },
+  {
+    "id": "M12-CALC-M-1",
+    "chapter": "Integrals",
+    "level": "Medium",
+    "prompt": "Find \u222bx\u00b2 dx.",
+    "answer_type": "algebraic",
+    "expected_latex": "x^3/3 + C",
+    "subject": "Mathematics",
+    "standard": 12
+  },
+  {
+    "id": "P12-ELC-E-1",
+    "chapter": "Electrostatics",
+    "level": "Easy",
+    "prompt": "State Coulomb\u2019s law in electrostatics.",
+    "answer_type": "text",
+    "expected": "The force between two charges is directly proportional to the product of their magnitudes and inversely proportional to the square of the distance between them.",
+    "subject": "Physics",
+    "standard": 12
+  },
+  {
+    "id": "P12-OPT-H-1",
+    "chapter": "Ray Optics",
+    "level": "Hard",
+    "prompt": "Derive the mirror formula using the laws of reflection.",
+    "answer_type": "text",
+    "expected": "1/f = 1/v + 1/u derived from geometry of reflected rays.",
+    "subject": "Physics",
+    "standard": 12
   }
 ]
