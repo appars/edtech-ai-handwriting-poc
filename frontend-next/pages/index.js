@@ -1,248 +1,74 @@
-// pages/index.js
-import { useEffect, useMemo, useRef, useState } from "react";
-import InkCanvas from "@/components/InkCanvas";
-// import InkCanvas from "../components/InkCanvas";
+// pages/index.js (Login/Setup)
+import { useEffect, useMemo, useState } from 'react';
+import Stepper from '../components/Stepper';
+import { storage } from '../lib/storage';
+import { createSession } from '../lib/session';
+import { useRouter } from 'next/router';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
-
-export default function Home() {
-  const inkRef = useRef(null);
-
-  // Questions & selection
+export default function LoginPage(){
+  const router = useRouter();
+  const [profile, setProfile] = useState(storage.get('edtech.v1.profile', { name: '', standard: '8', subject: 'Mathematics' }));
   const [questions, setQuestions] = useState([]);
-  const [chapter, setChapter] = useState("");
-  const [difficulty, setDifficulty] = useState("");
-  const [qId, setQId] = useState("");
-  const selectedQuestion = useMemo(
-    () => questions.find((q) => q.id === qId) || null,
-    [qId, questions]
-  );
+  const [chapter, setChapter] = useState('');
+  const [level, setLevel] = useState('');
 
-  // Answer & API result
-  const [answer, setAnswer] = useState("");
-  const [status, setStatus] = useState("");
-  const [result, setResult] = useState(null);
+  useEffect(()=>{ fetch('/questions.json').then(r=>r.json()).then(setQuestions).catch(console.error); }, []);
+  const chapters = useMemo(()=> Array.from(new Set(questions.map(q=>q.chapter))), [questions]);
+  const canStart = profile.name.trim() && chapter && level;
 
-  // Load demo questions
-  useEffect(() => {
-    fetch("/questions.json")
-      .then((r) => r.json())
-      .then(setQuestions)
-      .catch((e) => console.error("Failed to load questions:", e));
-  }, []);
-
-  // Derived lists
-  const chapters = useMemo(
-    () => Array.from(new Set(questions.map((q) => q.chapter))),
-    [questions]
-  );
-
-  const filtered = useMemo(
-    () =>
-      questions.filter(
-        (q) =>
-          (!chapter || q.chapter === chapter) &&
-          (!difficulty || q.level === difficulty)
-      ),
-    [questions, chapter, difficulty]
-  );
-
-  // Build payload based on question type
-  function buildPayload(q, userAnswer) {
-    if (!q) return null;
-    const at = (q.answer_type || "").toLowerCase();
-
-    if (at === "numeric") {
-      return {
-        answer: userAnswer,
-        answer_type: "numeric",
-        numeric_expected: q.numeric_expected ?? q.expected,
-        tolerance: q.tolerance ?? 0,
-      };
-    }
-    if (at === "numeric_fraction_ok") {
-      return {
-        answer: userAnswer,
-        answer_type: "numeric_fraction_ok",
-        numeric_expected: q.numeric_expected ?? q.expected,
-        expected_fraction: q.expected_fraction ?? null,
-        tolerance: q.tolerance ?? 0,
-      };
-    }
-    if (at === "categorical") {
-      return {
-        answer: userAnswer,
-        answer_type: "categorical",
-        categorical_expected: q.expected,
-      };
-    }
-    if (at === "ratio") {
-      return {
-        answer: userAnswer,
-        answer_type: "ratio",
-        ratio_expected: q.expected_ratio ?? q.expected,
-      };
-    }
-    return { answer: userAnswer, answer_type: at || "unknown" };
+  function startPractice(){
+    storage.set('edtech.v1.profile', profile);
+    createSession({ chapter, level, questions, size: 9 });
+    router.push('/exam');
   }
 
-  // API call
-  const handleSubmitToAI = async () => {
-    const q = selectedQuestion;
-    if (!q) {
-      setResult({ correct: false, feedback: "Pick a question first." });
-      return;
-    }
-    const payload = buildPayload(q, answer);
-    if (!payload) {
-      setResult({ correct: false, feedback: "Invalid payload." });
-      return;
-    }
-
-    try {
-      setStatus("Submitting…");
-      setResult(null);
-
-      const res = await fetch(`${API_URL}/check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json();
-
-      setResult({
-        ...json,
-        meta: { id: q.id, chapter: q.chapter, level: q.level },
-      });
-      setStatus("Done");
-    } catch (e) {
-      console.error(e);
-      setStatus("Error");
-      setResult({ correct: false, feedback: "Server error.", error: String(e) });
-    }
-  };
-
-  const handleUndo = () => inkRef.current?.undo();
-  const handleClear = () => inkRef.current?.clear();
-  const handleDownloadPNG = () => {
-    const dataUrl = inkRef.current?.toDataURL();
-    if (!dataUrl) return;
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `answer-${Date.now()}.png`;
-    a.click();
-  };
-
-  const resultClass = result?.correct ? "result ok" : "result bad";
-
   return (
-    <div className="app">
-      {/* Header */}
-      <div className="header">
-        <div className="brand">AI-Powered Exam POC</div>
-        <div className="badge">CBSE Demo · Grade 8</div>
+    <div className='app'>
+      <div className='header'>
+        <div className='brand'>School Exam Portal</div>
+        <div className='badge'>CBSE · Grade {profile.standard || '8'}</div>
       </div>
 
-      {/* Top selectors */}
-      <div className="panel" style={{ padding: 16, marginBottom: 14 }}>
-        <div className="row">
-          <div style={{ gridColumn: "span 3" }}>
-            <label className="label">Chapter</label>
-            <select
-              className="select"
-              value={chapter}
-              onChange={(e) => {
-                setChapter(e.target.value);
-                setQId("");
-              }}
-            >
-              <option value="">Select Chapter</option>
-              {chapters.map((ch) => (
-                <option key={ch} value={ch}>
-                  {ch}
-                </option>
-              ))}
+      <div className='panel'>
+        <Stepper step={chapter ? (level ? 3 : 2) : 1} />
+        <div className='row'>
+          <div style={{ gridColumn:'span 4' }}>
+            <label className='label'>Student Name</label>
+            <input className='input' placeholder='Enter name' value={profile.name} onChange={(e)=>setProfile({...profile, name:e.target.value})} />
+          </div>
+          <div style={{ gridColumn:'span 4' }}>
+            <label className='label'>Class/Standard</label>
+            <select className='select' value={profile.standard} onChange={(e)=>setProfile({...profile, standard:e.target.value})}>
+              <option value='8'>8</option>
+              <option value='12'>12</option>
             </select>
           </div>
-
-          <div style={{ gridColumn: "span 3" }}>
-            <label className="label">Difficulty</label>
-            <select
-              className="select"
-              value={difficulty}
-              onChange={(e) => {
-                setDifficulty(e.target.value);
-                setQId("");
-              }}
-            >
-              <option value="">Select Difficulty</option>
-              {["Easy", "Medium", "Hard"].map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
+          <div style={{ gridColumn:'span 4' }}>
+            <label className='label'>Subject</label>
+            <select className='select' value={profile.subject} onChange={(e)=>setProfile({...profile, subject:e.target.value})}>
+              <option>Mathematics</option>
             </select>
           </div>
-
-          <div style={{ gridColumn: "span 4" }}>
-            <label className="label">Question</label>
-            <select
-              className="select"
-              value={qId}
-              onChange={(e) => setQId(e.target.value)}
-            >
-              <option value="">Select Question</option>
-              {filtered.map((q, i) => (
-                <option key={q.id} value={q.id} title={q.prompt}>
-                  {`Q${i + 1}`}
-                </option>
-              ))}
+          <div style={{ gridColumn:'span 6' }}>
+            <label className='label'>Chapter</label>
+            <select className='select' value={chapter} onChange={(e)=> setChapter(e.target.value) }>
+              <option value=''>Select Chapter</option>
+              {chapters.map(ch => (<option key={ch} value={ch}>{ch}</option>))}
+            </select>
+          </div>
+          <div style={{ gridColumn:'span 6' }}>
+            <label className='label'>Difficulty</label>
+            <select className='select' value={level} onChange={(e)=> setLevel(e.target.value) }>
+              <option value=''>Select Difficulty</option>
+              {['Easy','Medium','Hard'].map(d => (<option key={d} value={d}>{d}</option>))}
             </select>
           </div>
         </div>
-
-        {/* Prompt */}
-        {selectedQuestion ? (
-          <div className="prompt">
-            <strong>Prompt:</strong> {selectedQuestion.prompt}
-          </div>
-        ) : (
-          <div className="hint">Select Chapter → Difficulty → Question to begin.</div>
-        )}
-      </div>
-
-      {/* Canvas */}
-      <div className="card" style={{ padding: 14 }}>
-        <InkCanvas ref={inkRef} width={1100} height={520} />
-
-        {/* Controls */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12, flexWrap: "wrap" }}>
-          <button className="btn secondary" onClick={handleUndo}>Undo</button>
-          <button className="btn secondary" onClick={handleClear}>Clear</button>
-          <button className="btn secondary" onClick={handleDownloadPNG}>Download PNG</button>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 6 }}>
-            <label htmlFor="final" className="label" style={{ margin: 0 }}>Final answer:</label>
-            <input
-              id="final"
-              className="input"
-              placeholder="e.g., 1, 32, 4:1"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              style={{ width: 180 }}
-            />
-          </div>
-
-          <button className="btn" onClick={handleSubmitToAI}>Submit to AI</button>
-          <span className="hint">{status}</span>
+        <div style={{display:'flex', gap:12, marginTop:12}}>
+          <button className='btn' onClick={startPractice} disabled={!canStart}>Start Practice</button>
+          {!canStart && <span className='hint'>Enter name and choose chapter + difficulty.</span>}
         </div>
-      </div>
-
-      {/* Result */}
-      <div className={result?.correct === undefined ? "result" : resultClass}>
-        <pre style={{ margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
       </div>
     </div>
   );
 }
-

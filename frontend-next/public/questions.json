@@ -1,64 +1,118 @@
 [
-  { "id": "NS-E-1", "unit": "Number System", "chapter": "Rational Numbers", "level": "Easy",
+  {
+    "id": "NS-E-1",
+    "unit": "Number System",
+    "chapter": "Rational Numbers",
+    "level": "Easy",
     "prompt": "Simplify: (3/5) + (2/5).",
     "answer_type": "numeric_fraction_ok",
     "expected_fraction": "1",
     "numeric_expected": 1,
     "tolerance": 0,
-    "tags": ["rational_numbers", "addition"]
+    "tags": [
+      "rational_numbers",
+      "addition"
+    ]
   },
-  { "id": "NS-M-1", "unit": "Number System", "chapter": "Powers", "level": "Medium",
-    "prompt": "Evaluate: 2^3 × 2^2.",
+  {
+    "id": "NS-M-1",
+    "unit": "Number System",
+    "chapter": "Powers",
+    "level": "Medium",
+    "prompt": "Evaluate: 2^3 \u00d7 2^2.",
     "answer_type": "numeric",
     "numeric_expected": 32,
     "tolerance": 0,
-    "tags": ["laws_of_exponents"]
+    "tags": [
+      "laws_of_exponents"
+    ]
   },
-  { "id": "NS-H-1", "unit": "Number System", "chapter": "Squares and Square Roots", "level": "Hard",
+  {
+    "id": "NS-H-1",
+    "unit": "Number System",
+    "chapter": "Squares and Square Roots",
+    "level": "Hard",
     "prompt": "Find the square root of 144.",
     "answer_type": "numeric",
     "numeric_expected": 12,
     "tolerance": 0,
-    "tags": ["square_roots"]
+    "tags": [
+      "square_roots"
+    ]
   },
-
-  { "id": "ALG-E-1", "unit": "Algebra", "chapter": "Algebraic Expressions", "level": "Easy",
+  {
+    "id": "ALG-E-1",
+    "unit": "Algebra",
+    "chapter": "Algebraic Expressions",
+    "level": "Easy",
     "prompt": "Simplify: 3x + 2x.",
     "answer_type": "algebraic",
     "expected_latex": "5x",
-    "tags": ["like_terms"]
+    "tags": [
+      "like_terms"
+    ]
   },
-  { "id": "ALG-M-1", "unit": "Algebra", "chapter": "Algebraic Expressions", "level": "Medium",
+  {
+    "id": "ALG-M-1",
+    "unit": "Algebra",
+    "chapter": "Algebraic Expressions",
+    "level": "Medium",
     "prompt": "Expand: (a + 2)(a + 3).",
     "answer_type": "algebraic",
     "expected_latex": "a^2 + 5a + 6",
-    "tags": ["expansion"]
+    "tags": [
+      "expansion"
+    ]
   },
-  { "id": "ALG-H-1", "unit": "Algebra", "chapter": "Algebraic Expressions", "level": "Hard",
-    "prompt": "Simplify: (x + 3)^2 − (x − 3)^2.",
+  {
+    "id": "ALG-H-1",
+    "unit": "Algebra",
+    "chapter": "Algebraic Expressions",
+    "level": "Hard",
+    "prompt": "Simplify: (x + 3)^2 \u2212 (x \u2212 3)^2.",
     "answer_type": "algebraic",
     "expected_latex": "12x",
-    "tags": ["algebraic_identities", "difference_of_squares"]
+    "tags": [
+      "algebraic_identities",
+      "difference_of_squares"
+    ]
   },
-
-  { "id": "RP-E-1", "unit": "Ratio and Proportion", "chapter": "Ratio and Proportion", "level": "Easy",
+  {
+    "id": "RP-E-1",
+    "unit": "Ratio and Proportion",
+    "chapter": "Ratio and Proportion",
+    "level": "Easy",
     "prompt": "Find the ratio of 2 hours to 30 minutes in simplest form.",
     "answer_type": "ratio",
     "expected_ratio": "4:1",
-    "tags": ["unit_conversion", "ratios"]
+    "tags": [
+      "unit_conversion",
+      "ratios"
+    ]
   },
-  { "id": "RP-M-1", "unit": "Ratio and Proportion", "chapter": "Ratio and Proportion", "level": "Medium",
-    "prompt": "If 3 pens cost ₹24, find the cost of 7 pens.",
+  {
+    "id": "RP-M-1",
+    "unit": "Ratio and Proportion",
+    "chapter": "Ratio and Proportion",
+    "level": "Medium",
+    "prompt": "If 3 pens cost \u20b924, find the cost of 7 pens.",
     "answer_type": "numeric",
     "numeric_expected": 56,
     "tolerance": 0,
-    "tags": ["direct_proportion"]
+    "tags": [
+      "direct_proportion"
+    ]
   },
-  { "id": "RP-H-1", "unit": "Ratio and Proportion", "chapter": "Playing with Numbers", "level": "Hard",
+  {
+    "id": "RP-H-1",
+    "unit": "Ratio and Proportion",
+    "chapter": "Playing with Numbers",
+    "level": "Hard",
     "prompt": "A number is divisible by 9 if the sum of its digits is divisible by 9. Is 5 481 divisible by 9? (Answer 'yes' or 'no')",
     "answer_type": "categorical",
     "expected": "yes",
-    "tags": ["divisibility_rules"]
+    "tags": [
+      "divisibility_rules"
+    ]
   }
 ]
-
