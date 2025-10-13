@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  backend:
+    build: ./backend-fastapi
+    image: edtech-backend:3.0
+    container_name: edtech-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend-fastapi:/app
+      - ./data:/app/data
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload

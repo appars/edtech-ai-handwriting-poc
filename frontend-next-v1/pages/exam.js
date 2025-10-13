@@ -23,7 +23,7 @@ export default function Exam(){
       const first = (qs)=> qs.find(q=>q.subject===subject && String(q.standard)===String(standard));
       const f = first(questions)||questions[0];
       if(!f) return;
-      s = createSession({subject,standard,chapter:f.chapter,level:f.level,questions,size:5});
+      s = createSession({subject,standard,chapter:f.chapter,level:f.level,questions,size:10});
     }
     setSession(s);
   },[mounted,questions]);
@@ -67,24 +67,9 @@ export default function Exam(){
     localStorage.removeItem("ed.v3.session.current");
     window.location.href = `/results/${session.id}`;
   }
-
-  // --- Board control handlers (minimal wiring) ---
-  function clearBoard(){
-    if(!canvasRef.current) return;
-    if(!confirm("Clear your working for this question? (Final answer stays)")) return;
-    canvasRef.current.clear?.();
-  }
-  function undoBoard(){
-    // Enabled only if InkCanvas exposes undo()
-    canvasRef.current?.undo?.();
-  }
-  function redoBoard(){
-    // Enabled only if InkCanvas exposes redo()
-    canvasRef.current?.redo?.();
-  }
   if(!mounted||!session||!currentQ) return null;
   return (<div className="app">
-    <div className="topbar"><div>{session.subject} Â· Grade {session.standard} Â· {session.chapter} ({session.level})</div><div>Q {session.index+1}/{session.questions.length}</div></div>
+    <div className="topbar"><div>{session.subject} · Grade {session.standard} · {session.chapter} ({session.level})</div><div>Q {session.index+1}/{session.questions.length}</div></div>
     <div className="panel">
       <div className="prompt"><strong>Prompt:</strong> {currentQ.prompt}</div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:12}}>
@@ -101,14 +86,7 @@ export default function Exam(){
           </div>
         </div>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,marginTop:12,flexWrap:'wrap'}}>
-        <div style={{display:'flex',gap:8}}>
-          <button type="button" className="btn secondary" onClick={undoBoard} disabled={!canvasRef.current || !canvasRef.current.undo} title="Undo (Ctrl/Cmd+Z)">â†¶ Undo</button>
-          <button type="button" className="btn secondary" onClick={redoBoard} disabled={!canvasRef.current || !canvasRef.current.redo} title="Redo (Ctrl/Cmd+Shift+Z)">â†· Redo</button>
-          <button type="button" className="btn secondary" onClick={clearBoard} title="Clear (Ctrl/Cmd+Backspace)">âŒ« Clear</button>
-        </div>
-        <QuestionNavigator queue={session.questions} statuses={session.statuses} currentIndex={session.index} onSelect={(i)=>{const s={...session}; s.index=i; Object.keys(s.statuses).forEach((id,idx)=>{ if(s.questions.indexOf(id)===i) s.statuses[id]="current"; }); saveSession(s); setSession(s);}}/>
-      </div>
+      <QuestionNavigator queue={session.questions} statuses={session.statuses} currentIndex={session.index} onSelect={(i)=>{const s={...session}; s.index=i; Object.keys(s.statuses).forEach((id,idx)=>{ if(s.questions.indexOf(id)===i) s.statuses[id]="current"; }); saveSession(s); setSession(s);}}/>
     </div>
   </div>);
 }
