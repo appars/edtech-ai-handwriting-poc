@@ -5,7 +5,7 @@ export function matchesSubject(q, subject){ if(!subject) return true; if(q.subje
   const isPhys = physics.has(q.chapter) || (q.id||'').toUpperCase().startsWith('P'); return (isPhys?'Physics':'Mathematics').toLowerCase()===subject.toLowerCase();}
 export function matchesStandard(q, standard){ if(!standard) return true; const s=Number(standard); if(q.standard) return Number(q.standard)===s;
   const m=(q.id||'').toUpperCase().match(/(M|P)(\d{1,2})-/); return m&&m[2]? Number(m[2])===s : true; }
-export function createSession({subject,standard,chapter,level,questions,size=5}){
+export function createSession({subject,standard,chapter,level,questions,size=10}){
   const pool = questions.filter(q=>matchesSubject(q,subject)&&matchesStandard(q,standard)&&q.chapter===chapter&&q.level===level);
   const pick = pool.slice(0,size).map(q=>q.id);
   const statuses = {}; pick.forEach((id,i)=>statuses[id]=i===0?'current':'unseen');
