@@ -84,7 +84,7 @@ export default function Exam(){
   }
   if(!mounted||!session||!currentQ) return null;
   return (<div className="app">
-    <div className="topbar"><div>{session.subject} · Grade {session.standard} · {session.chapter} ({session.level})</div><div>Q {session.index+1}/{session.questions.length}</div></div>
+    <div className="topbar"><div>{session.subject} Â· Grade {session.standard} Â· {session.chapter} ({session.level})</div><div>Q {session.index+1}/{session.questions.length}</div></div>
     <div className="panel">
       <div className="prompt"><strong>Prompt:</strong> {currentQ.prompt}</div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:12}}>
@@ -103,9 +103,9 @@ export default function Exam(){
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,marginTop:12,flexWrap:'wrap'}}>
         <div style={{display:'flex',gap:8}}>
-          <button type="button" className="btn secondary" onClick={undoBoard} disabled={!canvasRef.current || !canvasRef.current.undo} title="Undo (Ctrl/Cmd+Z)">↶ Undo</button>
-          <button type="button" className="btn secondary" onClick={redoBoard} disabled={!canvasRef.current || !canvasRef.current.redo} title="Redo (Ctrl/Cmd+Shift+Z)">↷ Redo</button>
-          <button type="button" className="btn secondary" onClick={clearBoard} title="Clear (Ctrl/Cmd+Backspace)">⌫ Clear</button>
+          <button type="button" className="btn secondary" onClick={undoBoard} disabled={!canvasRef.current || !canvasRef.current.undo} title="Undo (Ctrl/Cmd+Z)">â†¶ Undo</button>
+          <button type="button" className="btn secondary" onClick={redoBoard} disabled={!canvasRef.current || !canvasRef.current.redo} title="Redo (Ctrl/Cmd+Shift+Z)">â†· Redo</button>
+          <button type="button" className="btn secondary" onClick={clearBoard} title="Clear (Ctrl/Cmd+Backspace)">âŒ« Clear</button>
         </div>
         <QuestionNavigator queue={session.questions} statuses={session.statuses} currentIndex={session.index} onSelect={(i)=>{const s={...session}; s.index=i; Object.keys(s.statuses).forEach((id,idx)=>{ if(s.questions.indexOf(id)===i) s.statuses[id]="current"; }); saveSession(s); setSession(s);}}/>
       </div>
