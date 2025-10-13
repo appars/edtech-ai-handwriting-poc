@@ -1,0 +1,1 @@
+export default function QuestionNavigator({queue=[],statuses={},currentIndex=0,onSelect}){return(<div className='navbar'><div className='navgrid'>{queue.map((id,i)=>{const st=statuses[id]||'unseen';const cls=`tile ${st} ${i===currentIndex?'current':''}`;return <button key={id} className={cls} onClick={()=>onSelect?.(i)}>Q{i+1}</button>})}</div></div>)}

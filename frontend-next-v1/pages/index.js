@@ -8,7 +8,7 @@ export default function Login(){
   const [mounted,setMounted]=useState(false);
   const [name,setName]=useState("");
   const [standard,setStandard]=useState("8");
-  useEffect(()=>{setMounted(True=>true); const p=loadProfile(); if(p){setName(p.name||""); setStandard(String(p.standard||"8"));}},[]);
+  useEffect(()=>{setMounted(true); const p=loadProfile(); if(p){setName(p.name||""); setStandard(String(p.standard||"8"));}},[]);
   if(!mounted) return null;
   function go(){ if(!/^[A-Za-z][A-Za-z\s]{2,}$/.test(name)) return alert("Enter full name (letters only)."); const p={name,standard:Number(standard)}; saveProfile(p); r.push("/dashboard"); }
   return (<div className="app">
