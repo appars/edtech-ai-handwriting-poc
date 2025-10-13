@@ -1,94 +1,99 @@
-# backend-fastapi/app.py
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from fractions import Fraction
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from math import isclose
+from sympy import sympify, simplify
 
-app = FastAPI()
+app = FastAPI(title="EdTech v3 Evaluate API", version="3.0.0")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000","http://localhost:3001",
-        "http://127.0.0.1:3000","http://127.0.0.1:3001",
-    ],
-    allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-class Submission(BaseModel):
-    answer: str
-    answer_type: str | None = None
-    expected: float | int | None = None
-    numeric_expected: float | int | None = None
-    expected_fraction: str | None = None
-    tolerance: float | None = 0.0
-    ratio_expected: str | None = None         # e.g. "4:1"
-    categorical_expected: str | None = None   # e.g. "yes" or "both"
+class Meta(BaseModel):
+    answer_type: str = Field(default="numeric")
+    expected: Optional[str] = None
+    expected_numeric: Optional[float] = None
+    tolerance: Optional[float] = 0.0
 
-def _parse_number(s: str):
+class EvalIn(BaseModel):
+    questionId: str
+    answer: str
+    meta: Meta
+
+class EvalOut(BaseModel):
+    correct: Optional[bool]
+    feedback: str
+    normalized_answer: Optional[str] = None
+    tags: List[str] = []
+
+def parse_numeric(s: str) -> Optional[float]:
     try:
-        return float(s)
+        v = float(sympify(s))
+        return float(v)
     except Exception:
         return None
 
-def _equal_fraction(user: str, expected_fraction: str, numeric_expected: float, tol: float):
-    try:
-        # Accept "1", "1/1", "2/2", etc.
-        if "/" in user:
-            u = float(Fraction(user.replace(" ", "")))
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+@app.post("/evaluate", response_model=EvalOut)
+def evaluate(payload: EvalIn):
+    t = (payload.meta.tolerance or 0.0)
+    atype = (payload.meta.answer_type or "numeric").lower()
+    exp_str = payload.meta.expected
+    exp_num = payload.meta.expected_numeric
+
+    if atype in ("numeric", "numeric_fraction_ok", "ratio"):
+        student_val = parse_numeric(payload.answer)
+        if student_val is None and ":" in payload.answer:
+            try:
+                a,b = payload.answer.split(":")
+                student_val = parse_numeric(f"({a})/({b})")
+            except Exception:
+                student_val = None
+
+        if exp_num is None and exp_str:
+            exp_num = parse_numeric(exp_str)
+
+        if student_val is None or exp_num is None:
+            return EvalOut(correct=False, feedback="Invalid numeric input.", tags=["invalid_input"])
+
+        if isclose(student_val, exp_num, abs_tol=t if t else 0.0):
+            fb = "Correct within tolerance." if t else "Correct."
+            return EvalOut(correct=True, feedback=fb, normalized_answer=str(student_val), tags=["numeric"])
         else:
-            u = float(user)
-        return abs(u - float(numeric_expected)) <= (tol or 0.0)
-    except Exception:
-        return False
+            diff = abs(student_val - exp_num)
+            if t and diff <= (t*2):
+                return EvalOut(correct=False, feedback="Close—check rounding.", normalized_answer=str(student_val), tags=["rounding"])
+            return EvalOut(correct=False, feedback="Incorrect. Recheck your steps.", normalized_answer=str(student_val), tags=["numeric"])
 
-def _equal_ratio(user: str, expected: str):
-    # Normalize a:b → reduced form and compare
-    def norm(r: str):
-        a, b = r.replace(" ", "").split(":")
-        f = Fraction(int(a), int(b))
-        return f.numerator, f.denominator
-    try:
-        ua, ub = norm(user)
-        ea, eb = norm(expected)
-        return ua == ea and ub == eb
-    except Exception:
-        return False
+    elif atype in ("algebraic", "algebra"):
+        try:
+            se = sympify(payload.answer)
+            ee = sympify(exp_str) if exp_str else None
+            if ee is None:
+                return EvalOut(correct=False, feedback="No expected expression provided.", tags=["config_error"])
+            eq = simplify(se - ee)
+            if eq == 0:
+                return EvalOut(correct=True, feedback="Correct.", normalized_answer=str(se), tags=["algebraic"])
+            return EvalOut(correct=False, feedback="Not equivalent. Try simplifying.", normalized_answer=str(se), tags=["algebraic"])
+        except Exception:
+            return EvalOut(correct=False, feedback="Invalid algebraic input.", tags=["invalid_input"])
 
-@app.post("/check")
-def check(sub: Submission):
-    at = (sub.answer_type or "").lower()
-    ans = (sub.answer or "").strip()
+    elif atype in ("text","categorical"):
+        s = (payload.answer or "").strip().lower()
+        e = (exp_str or "").strip().lower()
+        if not s:
+            return EvalOut(correct=False, feedback="Answer required.", tags=["empty"])
+        ok = s==e or (all(k in s for k in e.split()[:3]) if e else False)
+        return EvalOut(correct=ok, feedback="Good." if ok else "Not matching definition.", normalized_answer=s, tags=["text"])
 
-    # numeric
-    if at == "numeric":
-        if sub.expected is None and sub.numeric_expected is None:
-            return {"correct": False, "feedback": "No expected value provided."}
-        target = sub.numeric_expected if sub.numeric_expected is not None else sub.expected
-        user = _parse_number(ans)
-        ok = (user is not None) and abs(user - float(target)) <= (sub.tolerance or 0.0)
-        return {"correct": ok, "feedback": "Good job!" if ok else "Try again."}
-
-    # numeric fraction ok
-    if at == "numeric_fraction_ok":
-        if sub.numeric_expected is None:
-            return {"correct": False, "feedback": "No numeric_expected provided."}
-        ok = _equal_fraction(ans, sub.expected_fraction or "", sub.numeric_expected, sub.tolerance or 0.0)
-        return {"correct": ok, "feedback": "Good job!" if ok else "Try again."}
-
-    # categorical (yes/no/both/onto/…)
-    if at == "categorical":
-        if sub.categorical_expected is None:
-            return {"correct": False, "feedback": "No expected category provided."}
-        ok = ans.lower() == sub.categorical_expected.lower()
-        return {"correct": ok, "feedback": "Good job!" if ok else "Try again."}
-
-    # ratio (e.g., "4:1")
-    if at == "ratio":
-        if sub.ratio_expected is None:
-            return {"correct": False, "feedback": "No expected ratio provided."}
-        ok = _equal_ratio(ans, sub.ratio_expected)
-        return {"correct": ok, "feedback": "Good job!" if ok else "Try again."}
-
-    # default / unsupported
-    return {"correct": False, "feedback": f"Unsupported type: {sub.answer_type}"}
-
+    return EvalOut(correct=False, feedback=f"Unsupported type: {atype}", tags=["unsupported"])

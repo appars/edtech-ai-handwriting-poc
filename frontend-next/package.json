@@ -1,11 +1,11 @@
 {
-  "name": "frontend-next-v2_2",
-  "version": "2.2.0",
+  "name": "edtech-frontend-v3",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p 3000"
   },
   "dependencies": {
     "next": "14.0.0",

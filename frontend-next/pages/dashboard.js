@@ -1,18 +1,58 @@
 
-import {loadAttempts,progressFromAttempts} from '../lib/session';
-import {PieChart,Pie,Cell,ResponsiveContainer,BarChart,XAxis,YAxis,Tooltip,Legend,Bar} from 'recharts';
+import { useEffect, useMemo, useState } from "react";
+import { loadProfile, logout, addSessionSummary, sessionsLog } from "../lib/session";
+import Link from "next/link";
 export default function Dashboard(){
-  const attempts=loadAttempts(); const prog=progressFromAttempts(attempts);
-  const pie=[{name:'Correct',value:prog.correct},{name:'Incorrect',value:Math.max(0,prog.attempted-prog.correct-prog.skipped)},{name:'Skipped',value:prog.skipped}];
-  const chapters=Object.values(attempts.reduce((m,a)=>{m[a.chapter]??={chapter:a.chapter,attempted:0,correct:0};m[a.chapter].attempted++;if(a.correct)m[a.chapter].correct++;return m;},{}));
-  const COLORS=['#16a34a','#ef4444','#f59e0b'];
-  return(<div className='app'>
-    <div className='header'><div className='brand'>Student Dashboard</div><div className='badge'>Preview</div></div>
-    <div className='row'>
-      <div style={{gridColumn:'span 4'}} className='panel'><h4>Overview</h4><div className='kpis'><div className='kpi'>Attempted: {prog.attempted}</div><div className='kpi'>Correct: {prog.correct}</div><div className='kpi'>Accuracy: {prog.attempted?prog.accuracy:0}%</div><div className='kpi'>Avg time: {prog.avgTime||0}s</div></div></div>
-      <div style={{gridColumn:'span 4'}} className='panel'><h4>Outcome Split</h4><div style={{width:'100%',height:220}}><ResponsiveContainer><PieChart><Pie data={pie} dataKey='value' nameKey='name' outerRadius={80} label>{pie.map((e,i)=>(<Cell key={i} fill={COLORS[i%COLORS.length]}/>))}</Pie><Legend/></PieChart></ResponsiveContainer></div></div>
-      <div style={{gridColumn:'span 4'}} className='panel'><h4>Accuracy by Chapter</h4><div style={{width:'100%',height:220}}><ResponsiveContainer><BarChart data={chapters}><XAxis dataKey='chapter'/><YAxis/><Tooltip/><Bar dataKey={(d)=>Math.round((d.correct/(d.attempted||1))*100)} name='Accuracy %' /></BarChart></ResponsiveContainer></div></div>
+  const [mounted,setMounted]=useState(false);
+  const [profile,setProfile]=useState(null);
+  const [attempts,setAttempts]=useState([]);
+  const [sessions,setSessions]=useState([]);
+  useEffect(()=>{
+    setMounted(true);
+    const p = loadProfile(); if(!p){window.location.href="/"; return;}
+    setProfile(p);
+    try{ const a=JSON.parse(localStorage.getItem("ed.v3.attempts")||"[]"); setAttempts(a);
+         const s=JSON.parse(localStorage.getItem("ed.v3.sessions")||"[]"); setSessions(s);}catch{}
+  },[]);
+  const accuracy = useMemo(()=>{ if(!attempts.length) return 0; const c=attempts.filter(a=>a.correct).length; return Math.round(100*c/attempts.length);},[attempts]);
+  if(!mounted||!profile) return null;
+  return (<div className="app">
+    <div className="header">
+      <div className="brand">Dashboard</div>
+      <div style={{display:'flex',gap:10,alignItems:'center'}}>
+        <div className="badge">{profile.name} · Grade {profile.standard}</div>
+        <button className="btn secondary" onClick={()=>{ if(confirm("Logout?")){logout(); window.location.href="/";}}}>Logout</button>
+      </div>
     </div>
-    <div className='panel' style={{marginTop:12}}><h4>Recent Attempts</h4><pre>{JSON.stringify(attempts.slice(-10),null,2)}</pre></div>
+    <div className="panel">
+      <div className="kpis">
+        <div className="kpi">Attempts: {attempts.length}</div>
+        <div className="kpi">Accuracy: {accuracy}%</div>
+        <div className="kpi">Sessions: {sessions.length}</div>
+      </div>
+      <div style={{display:'flex',gap:12,marginTop:12,flexWrap:'wrap'}}>
+        <Link className="btn" href="/exam">Start New Practice</Link>
+        <Link className="btn secondary" href="/results/all">View All Results</Link>
+      </div>
+    </div>
+    <div style={{marginTop:12}}>
+      <h3>Recent Sessions</h3>
+      <table className="table">
+        <thead><tr><th>Session</th><th>Context</th><th>Score</th><th>Duration</th><th>When</th><th></th></tr></thead>
+        <tbody>
+          {sessions.map((s)=>(
+            <tr key={s.id}>
+              <td>{s.id}</td>
+              <td>{s.subject} · Grade {s.standard} · {s.chapter} ({s.level})</td>
+              <td>{s.correct}/{s.total} ({Math.round(100*s.correct/s.total)}%)</td>
+              <td>{s.totalTimeSec||0}s</td>
+              <td>{new Date(s.endedAt||s.startedAt).toLocaleString()}</td>
+              <td><Link href={`/results/${s.id}`}>View</Link></td>
+            </tr>
+          ))}
+          {!sessions.length && <tr><td colSpan="6">No sessions yet. Start a practice!</td></tr>}
+        </tbody>
+      </table>
+    </div>
   </div>);
 }
